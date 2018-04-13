@@ -20,7 +20,6 @@
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>full</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\Assemblies</OutputPath>
     <ErrorReport>prompt</ErrorReport>
@@ -36,6 +35,7 @@
     </Reference>
     <Reference Include="0Harmony">
       <HintPath>..\..\..\..\..\..\..\..\Projects\dotNet\Dll\0Harmony.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\..\RimWorldLinux_Data\Managed\Assembly-CSharp.dll</HintPath>

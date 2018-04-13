@@ -2,7 +2,7 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.Workbench ActiveDocument="SaveGamePatching.cs">
     <Files>
-      <File FileName="SaveGamePatching.cs" Line="48" Column="48" />
+      <File FileName="SaveGamePatching.cs" Line="15" Column="15" NotebookId="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
