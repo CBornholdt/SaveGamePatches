@@ -61,7 +61,7 @@ namespace RimWorld
 
 		private static void ApplySGPatches()
 		{
-			Log.Message (string.Format ("Applying {0:d} SGPatches", SaveGamePatches.patches.Count));
+			Log.Message (string.Format ("Applying {0:d} SaveGamePatches", SaveGamePatches.patches.Count));
 			foreach (PatchOperation patch in SaveGamePatches.patches) 
 				patch.Apply (Scribe.loader.curXmlParent.OwnerDocument);
 		}
@@ -74,7 +74,7 @@ namespace RimWorld
 
 		private static void LoadSGPatchesFor(ModContentPack mod)	//Taken from Verse.ModContentPack.LoadPatches()
 		{
-			List<LoadableXmlAsset> list = DirectXmlLoader.XmlAssetsInModFolder (mod, "SGPatches/").ToList<LoadableXmlAsset> ();
+			List<LoadableXmlAsset> list = DirectXmlLoader.XmlAssetsInModFolder (mod, "SaveGamePatches/").ToList<LoadableXmlAsset> ();
 			for (int i = 0; i < list.Count; i++) {
 				XmlElement documentElement = list [i].xmlDoc.DocumentElement;
 				if (documentElement.Name != "Patch") {
