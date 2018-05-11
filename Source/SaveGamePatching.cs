@@ -21,7 +21,6 @@ namespace RimWorld
 			SaveGamePatches.patches = new List<PatchOperation> ();
 			var harmony = HarmonyInstance.Create("saveGamePatching");
 			harmony.PatchAll(Assembly.GetExecutingAssembly());
-			LoadGameFromSaveFilePatch.LoadSGPatches ();
 		}
 	}
 
@@ -40,12 +39,12 @@ namespace RimWorld
 			DeepProfiler.Start ("InitLoading (read file)");
 			Scribe.loader.InitLoading (GenFilePaths.FilePathForSavedGame (fileName));
 			DeepProfiler.End ();
+			ScribeMetaHeaderUtility.LoadGameDataHeader (ScribeMetaHeaderUtility.ScribeHeaderMode.Map, true);
 			//BEGIN PATCH
 			DeepProfiler.Start ("Patching Save Game");
 			ApplySGPatches ();
 			DeepProfiler.End ();
 			//END PATCH
-			ScribeMetaHeaderUtility.LoadGameDataHeader (ScribeMetaHeaderUtility.ScribeHeaderMode.Map, true);
 			if (Scribe.EnterNode ("game")) {
 				Current.Game = new Game ();
 				Current.Game.LoadGame ();
@@ -61,6 +60,7 @@ namespace RimWorld
 
 		private static void ApplySGPatches()
 		{
+			LoadGameFromSaveFilePatch.LoadSGPatches ();
 			Log.Message (string.Format ("Applying {0:d} SaveGamePatches", SaveGamePatches.patches.Count));
 			foreach (PatchOperation patch in SaveGamePatches.patches) 
 				patch.Apply (Scribe.loader.curXmlParent.OwnerDocument);
@@ -68,7 +68,9 @@ namespace RimWorld
 
 		public static void LoadSGPatches()
 		{
-			foreach (ModContentPack mod in LoadedModManager.RunningModsListForReading)
+			SaveGamePatches.patches.Clear ();
+
+			foreach (ModContentPack mod in LoadedModManager.RunningModsListForReading.Where(m => !ScribeMetaHeaderUtility.loadedModIdsList.Contains(m.Identifier))) 
 				LoadSGPatchesFor (mod);
 		}
 
