@@ -1,2 +1,6 @@
-Source/obj
-*userprefs
+**/[Oo]bj/
+**/[Bb]in/
+**/.vs
+*.pdb
+*userprefs*
+*UserPrefs*
