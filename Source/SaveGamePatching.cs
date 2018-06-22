@@ -87,7 +87,10 @@ namespace RimWorld
             //LoadedModManager only has Ids ...
             foreach (ModMetaData mod in ScribeMetaHeaderUtility.loadedModIdsList
                            .Select(id => ModLister.AllInstalledMods.FirstOrDefault(mod => mod.Identifier == id))
-                           .Where(mod => mod != null && !LoadedModManager.RunningMods.Any(modContent => modContent.Name == mod.Name)))
+                           .Where(mod => mod != null && !LoadedModManager.RunningMods
+                           .Any(modContent => modContent.Name == mod.Name 
+                                    || modContent.Name.Contains(mod.Name) 
+                                    || mod.Name.Contains(modContent.Name))))
                 LoadNotPresentPatchesFor (mod);
         }
 
