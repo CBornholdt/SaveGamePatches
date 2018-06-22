@@ -3,7 +3,7 @@
 	<name>Save Game Patching</name>
 	<author>Furiously Eloquent</author>
 	<targetVersion>0.18.0</targetVersion>
-	<description>V1.1.1
+	<description>V1.2.1
 Enables save game patching, allowing mods to be safely added to and removed from an existing game.
 	</description>
 </ModMetaData>
