@@ -76,14 +76,14 @@ namespace RimWorld
 		{
 			SaveGamePatches.patches.Clear ();
 
-			foreach (ModContentPack mod in LoadedModManager.RunningModsListForReading
-                .Where(m => !ScribeMetaHeaderUtility.loadedModIdsList.Contains(m.Identifier))) 
-				LoadSaveGamePatchesFor (mod);
+			foreach(ModContentPack mod in LoadedModManager.RunningModsListForReading
+				.Where(m => !ScribeMetaHeaderUtility.loadedModIdsList.Contains(m.Identifier)))
+				LoadSaveGamePatchesFor(mod);
 		}
         
         public static void LoadNotPresentPatches()
         {
-            SaveGamePatches.patches.Clear ();
+            SaveGamePatches.notPresentPatches.Clear ();
             //LoadedModManager only has Ids ...
             foreach (ModMetaData mod in ScribeMetaHeaderUtility.loadedModIdsList
                            .Select(id => ModLister.AllInstalledMods.FirstOrDefault(mod => mod.Identifier == id))
@@ -110,7 +110,7 @@ namespace RimWorld
 							} else {
 								PatchOperation patchOperation = DirectXmlToObject.ObjectFromXml<PatchOperation> (xmlNode, false);
 								patchOperation.sourceFile = list [i].FullFilePath;
-								SaveGamePatches.patches.Add (patchOperation);
+								SaveGamePatches.patches.Add(patchOperation);
 							}
 						}
 					}
