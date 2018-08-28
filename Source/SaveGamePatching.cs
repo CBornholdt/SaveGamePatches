@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Harmony;
 using System.Reflection;
+using System.Reflection.Emit;
 using RimWorld;
 using Verse;
 
@@ -22,46 +23,33 @@ namespace RimWorld
 			SaveGamePatches.patches = new List<PatchOperation> ();
 			SaveGamePatches.notPresentPatches = new List<PatchOperation>();
 			var harmony = HarmonyInstance.Create("saveGamePatching");
-			harmony.PatchAll(Assembly.GetExecutingAssembly());
+
+			harmony.Patch(AccessTools.Method(typeof(Verse.SavedGameLoaderNow)
+												, nameof(Verse.SavedGameLoaderNow.LoadGameFromSaveFileNow))
+							, null, null, new HarmonyMethod(AccessTools.Method(typeof(LoadGameFromSaveFilePatch)
+																, nameof(LoadGameFromSaveFilePatch.Transpiler))));
 		}
 	}
 
-	//Due to multithreading had issues Prefixing a non-static method ... choose to replace a static method instead
-	[HarmonyPatch(typeof(Verse.SavedGameLoader))]
-	[HarmonyPatch("LoadGameFromSaveFile")]
 	static class LoadGameFromSaveFilePatch
 	{
-		public static bool Prefix(string fileName)
+		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
 		{
-			string str = GenText.ToCommaList (from mod in LoadedModManager.RunningMods
-				select mod.ToString (), true);
-			Log.Message ("Loading game from file " + fileName + " with mods " + str);
-			DeepProfiler.Start ("Loading game from file " + fileName);
-			Current.Game = new Game ();
-			DeepProfiler.Start ("InitLoading (read file)");
-			Scribe.loader.InitLoading (GenFilePaths.FilePathForSavedGame (fileName));
-			DeepProfiler.End ();
-			ScribeMetaHeaderUtility.LoadGameDataHeader (ScribeMetaHeaderUtility.ScribeHeaderMode.Map, true);
-			//BEGIN PATCH
-			DeepProfiler.Start ("Patching Save Game");
-			ApplySaveGamePatches ();
-			DeepProfiler.End ();
-			//END PATCH
-			if (Scribe.EnterNode ("game")) {
-				Current.Game = new Game ();
-				Current.Game.LoadGame ();
-				PermadeathModeUtility.CheckUpdatePermadeathModeUniqueNameOnGameLoad (fileName);
-				DeepProfiler.End ();
-				return false;	//Replace actual LoadGameFromSaveFile method
-			}
-			Log.Error ("Could not find game XML node.");
-			Scribe.ForceStop ();
+			MethodInfo scribeMetaLoad = AccessTools.Method(typeof(ScribeMetaHeaderUtility)
+                                                            , nameof(ScribeMetaHeaderUtility.LoadGameDataHeader));
+			MethodInfo applySaveGamePatches = AccessTools.Method(typeof(LoadGameFromSaveFilePatch)
+																	, nameof(LoadGameFromSaveFilePatch.ApplySaveGamePatches));
 
-			return false;  //Replace actual LoadGameFromSaveFile method
+			foreach(var code in instructions) {
+				yield return code;
+				if(code.operand == scribeMetaLoad)
+					yield return new CodeInstruction(OpCodes.Call, applySaveGamePatches);
+			}
 		}
 
 		private static void ApplySaveGamePatches()
 		{
+            DeepProfiler.Start ("Patching Save Game");
 			LoadGameFromSaveFilePatch.LoadSaveGamePatches ();
             LoadGameFromSaveFilePatch.LoadNotPresentPatches ();
 			Log.Message (string.Format ("Applying {0:d} SaveGamePatches", SaveGamePatches.patches.Count));
@@ -70,6 +58,7 @@ namespace RimWorld
 			Log.Message(string.Format("Applying {0:d} NotPresent Patches", SaveGamePatches.notPresentPatches.Count));  
             foreach (PatchOperation patch in SaveGamePatches.notPresentPatches) 
                 patch.Apply (Scribe.loader.curXmlParent.OwnerDocument);
+            DeepProfiler.End ();
 		}
 
 		public static void LoadSaveGamePatches()
